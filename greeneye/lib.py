@@ -6,9 +6,53 @@
 from os.path import split
 import pandas as pd
 import datetime
+from google.cloud import storage
+
+### GCP configuration - - - - - - - - - - - - - - - - - - -
+
+# /!\ you should fill these according to your account
+
+### GCP Project - - - - - - - - - - - - - - - - - - - - - -
+
+PROJECT_NAME = 'Batch 487 - Le Wagon'
+
+### GCP Storage - - - - - - - - - - - - - - - - - - - - - -
+
+BUCKET_NAME = 'green_eye'
+
+##### Data  - - - - - - - - - - - - - - - - - - - - - - - -
+
+# train data file location
+# /!\ here you need to decide if you are going to train using the provided and uploaded data/train_1k.csv sample file
+# or if you want to use the full dataset (you need need to upload it first of course)
+BUCKET_TRAIN_DATA_PATH = 'data/train-jpg'
+
+##### Training  - - - - - - - - - - - - - - - - - - - - - -
+
+# not required here
+
+##### Model - - - - - - - - - - - - - - - - - - - - - - - -
+
+# model folder name (will contain the folders for all trained model versions)
+MODEL_NAME = 'green_eye'
+
+# model version folder name (where the trained model.joblib file will be stored)
+MODEL_VERSION = 'v1'
+
+### GCP AI Platform - - - - - - - - - - - - - - - - - - - -
+
+# not required here
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 pd.set_option('display.width', 200)
 
+def get_data():
+    """method to get the training data (or a portion of it) from google cloud bucket"""
+    client = storage.Client()
+    df = pd.read_csv("gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH), nrows=1000)
+    return df
 
 def clean_data(data):
     """ clean data
