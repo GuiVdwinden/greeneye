@@ -10,4 +10,3 @@ groupama/data/base_pno.*
 .DS_Store
 .idea/
 /raw_data/
-/my_model.h5
