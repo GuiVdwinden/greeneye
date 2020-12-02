@@ -20,7 +20,7 @@ pipeline_def = {'pipeline': joblib.load(PATH_TO_MODEL),
 
 @app.route('/')
 def index():
-    return 'OK'
+    return 'OK!'
 
 
 # @app.route('/predict_fare', methods=['GET', 'POST'])
