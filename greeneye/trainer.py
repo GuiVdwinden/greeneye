@@ -15,44 +15,10 @@ import seaborn as sns
 import PIL
 import PIL.Image
 from tensorflow.keras import models, layers, preprocessing, backend
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
-
-### GCP configuration - - - - - - - - - - - - - - - - - - -
-
-# /!\ you should fill these according to your account
-
-### GCP Project - - - - - - - - - - - - - - - - - - - - - -
-
-PROJECT_NAME='Batch 487 - Le Wagon'
-
-### GCP Storage - - - - - - - - - - - - - - - - - - - - - -
-
-BUCKET_NAME='green_eye'
-
-##### Data  - - - - - - - - - - - - - - - - - - - - - - - -
-
-# train data file location
-BUCKET_TRAIN_DATA_PATH = 'data/train_classes.csv'
-
-##### Training  - - - - - - - - - - - - - - - - - - - - - -
-
-BUCKET_TRAINING_FOLDER = 'data/train-jpg'
-
-##### Model - - - - - - - - - - - - - - - - - - - - - - - -
-
-# model folder name (will contain the folders for all trained model versions)
-MODEL_PATH = 'models'
-
-# model version folder name (where the trained model.joblib file will be stored)
-MODEL_VERSION = 'v1'
-
-### GCP AI Platform - - - - - - - - - - - - - - - - - - - -
-
-# not required here
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+from greeneye.params import PROJECT_NAME, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH, BUCKET_TRAINING_FOLDER, MODEL_PATH, MODEL_VERSION    
 
 
 def get_data():
@@ -150,36 +116,59 @@ def train_model(train_gen, valid_gen, test_gen):
     return model
 
 def save_model(model):
-
-    save_path = os.path.join("gs://", BUCKET_NAME, "models")
-
-    model.save(save_path)
-
-    tfc.run(requirements_txt="requirements.txt",
+    tfc.run(
         docker_image_bucket_name=BUCKET_NAME
         )
 
-    MODEL_PATH = "models"
-    checkpoint_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH, "save_at_{epoch}")
-    tensorboard_path = os.path.join(
-        "gs://", BUCKET_NAME, "logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    )
+    save_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH)
+
+#    save_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
+    
+    checkpoint_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
+    tensorboard_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
+
+    # checkpoint_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH, "save_at_{epoch}")
+    # tensorboard_path = os.path.join("gs://", BUCKET_NAME, "logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     callbacks = [
         tf.keras.callbacks.ModelCheckpoint(checkpoint_path),
         tf.keras.callbacks.TensorBoard(log_dir=tensorboard_path, histogram_freq=1),
-        tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3),
+        tf.keras.callbacks.EarlyStopping(monitor='categorical_crossentropy', patience=3),
     ]
+    model.save('my_model.h5',save_path, save_format='h5')
+    print('model saved!')
 
-    client = storage.Client().bucket(BUCKET_NAME)
+# def save_model(model):
 
-    storage_location = '{}/{}/{}/{}'.format(
-        'models',
-        MODEL_PATH,
-        MODEL_VERSION,
-        'ResNet50_test')
-    blob = client.blob(storage_location)
-    blob.upload_from_filename(local_model_name)
-    print("uploaded model to gcp cloud storage under \n => {}".format(storage_location))
+#     save_path = os.path.join("gs://", BUCKET_NAME, "models")
+
+#     tfc.run(requirements_txt="requirements.txt",
+#         docker_image_bucket_name=BUCKET_NAME
+#         )
+
+#     MODEL_PATH = "models"
+#     checkpoint_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH, "save_at_{epoch}")
+#     tensorboard_path = os.path.join(
+#         "gs://", BUCKET_NAME, "logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+#     )
+#     callbacks = [
+#         tf.keras.callbacks.ModelCheckpoint(checkpoint_path),
+#         tf.keras.callbacks.TensorBoard(log_dir=tensorboard_path, histogram_freq=1),
+#         tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3),
+#     ]
+
+#     model.save(save_path)
+
+#     client = storage.Client().bucket(BUCKET_NAME)
+
+#     storage_location = '{}/{}/{}/{}'.format(
+#         'models',
+#         MODEL_PATH,
+#         MODEL_VERSION,
+#         'ResNet50_test')
+#     print("uploaded model to gcp cloud storage under \n => {}".format(storage_location))
+    # blob = client.blob(storage_location)
+    # blob.upload_from_filename(local_model_name)
+    
 
 # df_ = get_data()
 # print('got the data')
