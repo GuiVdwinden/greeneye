@@ -58,3 +58,61 @@ pypi_test:
 
 pypi:
 	@twine upload dist/* -u lologibus2
+
+### GCP configuration - - - - - - - - - - - - - - - - - - -
+
+# /!\ you should fill these according to your account
+
+### GCP Project - - - - - - - - - - - - - - - - - - - - - -
+
+PROJECT_NAME='Batch 487 - Le Wagon'
+
+### GCP Storage - - - - - - - - - - - - - - - - - - - - - -
+
+BUCKET_NAME='green_eye'
+
+##### Data  - - - - - - - - - - - - - - - - - - - - - - - -
+
+BUCKET_TRAIN_DATA_PATH = 'data/'
+
+##### Training  - - - - - - - - - - - - - - - - - - - - - -
+
+# will store the packages uploaded to GCP for the training
+BUCKET_TRAINING_FOLDER = 'data/train-jpg'
+
+##### Model - - - - - - - - - - - - - - - - - - - - - - - -
+
+BUCKET_MODEL_FOLDER = 'models/'
+
+### GCP AI Platform - - - - - - - - - - - - - - - - - - - -
+
+##### Machine configuration - - - - - - - - - - - - - - - -
+
+REGION=southamerica-east1
+
+PYTHON_VERSION=3.7
+FRAMEWORK=tensorflow.keras
+RUNTIME_VERSION=1.15
+
+##### Package params  - - - - - - - - - - - - - - - - - - -
+
+PACKAGE_NAME=greeneye
+FILENAME=trainer
+
+##### Job - - - - - - - - - - - - - - - - - - - - - - - - -
+
+JOB_NAME=XXXXXX$(shell date +'%Y%m%d_%H%M%S')
+
+
+run_locally:
+	@python -m ${PACKAGE_NAME}.${FILENAME}
+
+gcp_submit_training:
+	gcloud ai-platform jobs submit training ${JOB_NAME} \
+		--job-dir gs://${BUCKET_NAME}/${BUCKET_TRAINING_FOLDER} \
+		--package-path ${PACKAGE_NAME} \
+		--module-name ${PACKAGE_NAME}.${FILENAME} \
+		--python-version=${PYTHON_VERSION} \
+		--runtime-version=${RUNTIME_VERSION} \
+		--region ${REGION} \
+		--stream-logs
