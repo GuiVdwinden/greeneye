@@ -56,10 +56,13 @@ def download_model2():
 
     FS = gcsfs.GCSFileSystem(project=PROJECT_NAME,
                              token=CREDENTIALS)
-
+    myModel = 'xx'
+    
     with FS.open(MODEL_PATH, 'rb') as model_file:
-         model_gcs = h5py.File('my_model.h5', 'r')
+         model_gcs = h5py.File(model_file, 'r')
          myModel = load_model(model_gcs)
+
+    return myModel
 
 print(download_model2())
 

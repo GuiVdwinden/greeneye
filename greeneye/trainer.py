@@ -134,8 +134,9 @@ def save_model(model):
 #         tf.keras.callbacks.TensorBoard(log_dir=tensorboard_path, histogram_freq=1),
 #         tf.keras.callbacks.EarlyStopping(monitor='categorical_crossentropy', patience=3),
 #     ]
-#    model.save_model('my_model.h5', 'gs://greeneye/models/', save_format='h5')
-    models.save_model(model, 'gs://greeneye/models/my_model.h5', save_format='h5')
+    model.save('gs://green_eye/models')
+#    models.save_model(model, 'my_model.h5', save_format='h5')
+#    !gsutil -m cp model.h5 gs://green_eye/models/model.h5
 
     print(model)
 
