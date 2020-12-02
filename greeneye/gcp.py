@@ -52,13 +52,13 @@ def get_credentials():
 
 def download_model2():
     CREDENTIALS = get_credentials()
-    MODEL_PATH = 'gs://green_eye/tf_cloud_train_tar_628d2136_90a4_45e3_a3af_d0a9fc96c3d1'
+    MODEL_PATH = 'gs://green_eye/models/my_model.h5'
 
     FS = gcsfs.GCSFileSystem(project=PROJECT_NAME,
                              token=CREDENTIALS)
 
     with FS.open(MODEL_PATH, 'rb') as model_file:
-         model_gcs = h5py.File(model_file, 'r')
+         model_gcs = h5py.File('my_model.h5', 'r')
          myModel = load_model(model_gcs)
 
 print(download_model2())

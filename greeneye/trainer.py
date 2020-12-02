@@ -112,30 +112,33 @@ def train_model(train_gen, valid_gen, test_gen):
                         validation_steps=STEP_SIZE_VALID,
                         epochs=1
     )
-
+    print(model)
     return model
 
 def save_model(model):
-    tfc.run(
-        docker_image_bucket_name=BUCKET_NAME
-        )
+#     tfc.run(
+#         docker_image_bucket_name=BUCKET_NAME
+#         )
 
-    save_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH)
+#     save_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH)
 
-#    save_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
+# #    save_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
     
-    checkpoint_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
-    tensorboard_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
+#     checkpoint_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
+#     tensorboard_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
 
-    # checkpoint_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH, "save_at_{epoch}")
-    # tensorboard_path = os.path.join("gs://", BUCKET_NAME, "logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-    callbacks = [
-        tf.keras.callbacks.ModelCheckpoint(checkpoint_path),
-        tf.keras.callbacks.TensorBoard(log_dir=tensorboard_path, histogram_freq=1),
-        tf.keras.callbacks.EarlyStopping(monitor='categorical_crossentropy', patience=3),
-    ]
-    model.save('my_model.h5',save_path, save_format='h5')
-    print('model saved!')
+#     # checkpoint_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH, "save_at_{epoch}")
+#     # tensorboard_path = os.path.join("gs://", BUCKET_NAME, "logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+#     callbacks = [
+#         tf.keras.callbacks.ModelCheckpoint(checkpoint_path),
+#         tf.keras.callbacks.TensorBoard(log_dir=tensorboard_path, histogram_freq=1),
+#         tf.keras.callbacks.EarlyStopping(monitor='categorical_crossentropy', patience=3),
+#     ]
+#    model.save_model('my_model.h5', 'gs://greeneye/models/', save_format='h5')
+    models.save_model(model, 'gs://greeneye/models/my_model.h5', save_format='h5')
+
+    print(model)
+
 
 # def save_model(model):
 
