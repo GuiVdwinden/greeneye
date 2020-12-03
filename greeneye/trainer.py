@@ -7,82 +7,93 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_cloud as tfc
 from tensorflow import keras
-import numpy as np
-import pandas as pd
-import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 import PIL
 import PIL.Image
 from tensorflow.keras import models, layers, preprocessing, backend
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard, ReduceLROnPlateau
 from tensorflow.keras.applications.resnet50 import ResNet50
 from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
-from greeneye.params import PROJECT_NAME, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH, BUCKET_TRAINING_FOLDER, MODEL_PATH, MODEL_VERSION    
+from greeneye.params import PROJECT_NAME, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH, BUCKET_TRAINING_FOLDER, MODEL_PATH, MODEL_VERSION
 
 
 def get_data():
     """method to get the training data (or a portion of it) from google cloud bucket"""
     client = storage.Client()
-    train_classes = pd.read_csv("gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH), nrows=1000)
-    
-    labels = []
-    for i in train_classes['tags']:
-        for x in i.split(' '):
-            if x not in labels:
-                labels.append(x)
+    df = pd.read_csv("gs://{}/{}".format(BUCKET_NAME, BUCKET_TRAIN_DATA_PATH), nrows=1000)
+    """download image folder from google cloud bucket"""
+    return df
 
-    train_classes['tags'] = train_classes['tags'].apply(lambda x: x.split(' '))
-
-    train_classes['image_name'] = train_classes['image_name'].apply(lambda x: (x + '.jpg') if '.jpg' not in x else x)
-
-    return train_classes
-
-def preprocess(df):    
+def preprocess(df):
 
     labels = ['haze','primary','agriculture','clear',
     'water','habitation','road','cultivation','slash_burn','cloudy',
     'partly_cloudy','conventional_mine','bare_ground','artisinal_mine',
     'blooming','selective_logging','blow_down']
 
+    """create column tag_list with list of tags"""
+    df['tag_list'] = df['tags'].apply(lambda x: x.split(' '))
+
+    """add file extension to image_name column"""
+    df['image_name'] = df['image_name'].apply(lambda x: (x + '.jpg') if '.jpg' not in x else x)
+
+    """drop the one picture without a weather label"""
+    index = df[df['clear'] + df['cloudy'] + df['haze'] + df['partly_cloudy'] != 1].index
+    df.drop(index=index[0])
+
+    """remove clear and haze labels from tag_list for better model accuracy"""
+    def remove_label_from_tag_list(label):
+        for i in df['tag_list']:
+            try:
+                i.remove(label)
+            except ValueError:
+                pass
+
+    remove_label_from_tag_list('clear')
+    remove_label_from_tag_list('haze')
+
     train = df.sample(frac=0.7,random_state=42)
     test = df.drop(train.index)
 
-    datagen = preprocessing.image.ImageDataGenerator(rescale=1./255, validation_split=0.25)
-    train_gen = datagen.flow_from_dataframe(dataframe=train, 
-                    directory=("raw_data/train-jpg"), x_col="image_name", y_col="tags", subset="training", seed=42,
-                    shuffle=True, class_mode="categorical", target_size=(224,224), batch_size=32, classes=labels)
-    valid_gen = datagen.flow_from_dataframe(dataframe=train, 
-                    directory=("raw_data/train-jpg"), x_col="image_name", y_col="tags", subset="validation", seed=42,
-                    shuffle=True, class_mode="categorical", target_size=(224,224), batch_size=32, classes=labels)
+    img_size=128
+
+    datagen = preprocessing.image.ImageDataGenerator(rescale=1./255, shear_range=0.2,
+            horizontal_flip=True, vertical_flip=True, validation_split=0.25)
+    train_gen = datagen.flow_from_dataframe(dataframe=train,
+                    directory=("raw_data/train-jpg"), x_col="image_name", y_col="tag_list", subset="training", seed=42,
+                    shuffle=True, class_mode="categorical", target_size=(img_size,img_size), batch_size=32)
+    valid_gen = datagen.flow_from_dataframe(dataframe=train,
+                    directory=("raw_data/train-jpg"), x_col="image_name", y_col="tag_list", subset="validation", seed=42,
+                    shuffle=True, class_mode="categorical", target_size=(img_size,img_size), batch_size=32)
 
     datagen_test = preprocessing.image.ImageDataGenerator(rescale=1./255)
-    test_gen = datagen_test.flow_from_dataframe(dataframe=test, 
-                    directory=("raw_data/train-jpg"), x_col="image_name", y_col="tags",
-                    class_mode="categorical", target_size=(224,224), batch_size=32, classes=labels)
+    test_gen = datagen_test.flow_from_dataframe(dataframe=test,
+                    directory=("raw_data/train-jpg"), x_col="image_name", y_col="tag_list",
+                    class_mode="categorical", target_size=(img_size,img_size), batch_size=32, classes=labels)
 
     return train_gen, valid_gen, test_gen
 
-# def fbeta(y_true, y_pred):
-#     beta_squared = 4
+"""create f2 score"""
+def fbeta(y_true, y_pred, beta=2):
+     bb = beta ** 2
 
-#     tp = backend.sum(y_true * y_pred) + backend.epsilon()
-#     fp = backend.sum(y_pred) - tp
-#     fn = backend.sum(y_true) - tp
+     tp = backend.sum(y_true * y_pred) + backend.epsilon()
+     fp = backend.sum(y_pred) - tp
+     fn = backend.sum(y_true) - tp
 
-#     precision = tp / (tp + fp)
-#     recall = tp / (tp + fn)
+     precision = tp / (tp + fp)
+     recall = tp / (tp + fn)
 
-#     result = (beta_squared + 1) * (precision * recall) / (beta_squared * precision + recall + backend.epsilon())
+     score = (bb + 1) * (precision * recall) / (bb * precision + recall + backend.epsilon())
 
-#     return result
+     return score
 
 def train_model(train_gen, valid_gen, test_gen):
     base_model = ResNet50(
         include_top=False,
         weights='imagenet',
-        input_tensor=None,
-        input_shape=(224,224,3),
+        input_shape=(img_size, img_size, 3),
         pooling='avg')
 
     x = base_model.output
@@ -91,17 +102,24 @@ def train_model(train_gen, valid_gen, test_gen):
     x = layers.Dense(2048, activation='relu')(x)
 
     # and a logistic layer -- let's say we have 200 classes
-    predictions = layers.Dense(17, activation='softmax')(x)
+    predictions = layers.Dense(15, activation='sigmoid')(x)
 
     # this is the model we will train
     model = models.Model(inputs=base_model.input, outputs=predictions)
 
+    # freeze base layers
     for layer in base_model.layers:
         layer.trainable = False
 
-    model.compile(loss='categorical_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
+    optimizer = Adam(0.001, decay=0.0003)
+
+    callbacks = [ModelCheckpoint('best_weights.hdf5', monitor='val_loss', save_best_only=True, verbose=2, save_weights_only=False),
+             ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=2, verbose=1, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0.0000001),
+             EarlyStopping(monitor='val_loss', patience=5, verbose=0)]
+
+    model.compile(loss='binary_crossentropy',
+              optimizer=optimizer,
+              metrics=['accuracy', fbeta])
 
     STEP_SIZE_TRAIN=train_gen.n//train_gen.batch_size
     STEP_SIZE_VALID=valid_gen.n//valid_gen.batch_size
@@ -110,9 +128,24 @@ def train_model(train_gen, valid_gen, test_gen):
                         steps_per_epoch=STEP_SIZE_TRAIN,
                         validation_data=valid_gen,
                         validation_steps=STEP_SIZE_VALID,
-                        epochs=1
-    )
+                        callbacks=callbacks
+                        epochs=5)
     print(model)
+
+    # unfreeze base layers and train entire model with new images
+    optimizer = Adam(0.0001, decay=0.00000001)
+    model.load_weights('best_weights.hdf5', by_name=True)
+    for layer in base_model.layers:
+        layer.trainable = True
+
+    model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy', fbeta])
+    model.fit_generator(generator=train_gen,
+                        steps_per_epoch=STEP_SIZE_TRAIN,
+                        validation_data=valid_gen,
+                        validation_steps=STEP_SIZE_VALID,
+                        callbacks=callbacks,
+                        epochs=50)
+
     return model
 
 def save_model(model):
@@ -123,7 +156,7 @@ def save_model(model):
 #     save_path = os.path.join("gs://", BUCKET_NAME, MODEL_PATH)
 
 # #    save_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
-    
+
 #     checkpoint_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
 #     tensorboard_path = "gs://{}/{}".format(BUCKET_NAME, MODEL_PATH)
 
@@ -172,7 +205,7 @@ def save_model(model):
 #     print("uploaded model to gcp cloud storage under \n => {}".format(storage_location))
     # blob = client.blob(storage_location)
     # blob.upload_from_filename(local_model_name)
-    
+
 
 # df_ = get_data()
 # print('got the data')
