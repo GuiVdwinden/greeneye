@@ -98,16 +98,16 @@ def train_model(train_gen, valid_gen, test_gen):
 
     x = base_model.output
 
-    # let's add a fully-connected layer
+    """add a fully-connected layer"""
     x = layers.Dense(2048, activation='relu')(x)
 
-    # and a logistic layer -- let's say we have 200 classes
+    """and a logistic layer with the number of classes"""
     predictions = layers.Dense(15, activation='sigmoid')(x)
 
-    # this is the model we will train
+    """this is the model we will train"""
     model = models.Model(inputs=base_model.input, outputs=predictions)
 
-    # freeze base layers
+    """freeze base layers"""
     for layer in base_model.layers:
         layer.trainable = False
 
@@ -132,7 +132,7 @@ def train_model(train_gen, valid_gen, test_gen):
                         epochs=5)
     print(model)
 
-    # unfreeze base layers and train entire model with new images
+    """unfreeze base layers and train entire model with new images"""
     optimizer = Adam(0.0001, decay=0.00000001)
     model.load_weights('best_weights.hdf5', by_name=True)
     for layer in base_model.layers:
