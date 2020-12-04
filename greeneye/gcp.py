@@ -11,6 +11,8 @@ from greeneye.params import PROJECT_NAME, BUCKET_NAME, BUCKET_TRAIN_DATA_PATH, B
 from tensorflow.keras.models import load_model
 import h5py
 import gcsfs
+import sys
+from google.protobuf import text_format
 
 #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/Users/Gui/Documents/gcp_keys/Batch487_Gui_LeWagon-538bf8f6a382.json"
 
@@ -50,21 +52,25 @@ def get_credentials():
 
 
 
-def download_model2():
-    CREDENTIALS = get_credentials()
-    MODEL_PATH = 'gs://green_eye/models/my_model.h5'
+def download_model():
+#    CREDENTIALS = get_credentials()
+    MODEL_PATH = 'gs://green_eye/models/GreenEyeResNet50V1'
 
-    FS = gcsfs.GCSFileSystem(project=PROJECT_NAME,
-                             token=CREDENTIALS)
-    myModel = 'xx'
+#    FS = gcsfs.GCSFileSystem(project=PROJECT_NAME,
+#                             token=CREDENTIALS)
     
-    with FS.open(MODEL_PATH, 'rb') as model_file:
-         model_gcs = h5py.File(model_file, 'r')
-         myModel = load_model(model_gcs)
+#    with FS.open(MODEL_PATH, 'rb') as model_file:
+#         model_gcs = h5py.File(model_file, 'r')
+#         myModel = load_model(model_gcs)
+
+    with tf.compat.v1.Session(graph=tf.Graph()) as sess:
+       myModel = tf.compat.v1.saved_model.loader.load(
+           sess,
+           [tf.compat.v1.saved_model.tag_constants.SERVING],MODEL_PATH)
 
     return myModel
 
-print(download_model2())
+print(download_model())
 
 # def download_model(model_version=MODEL_VERSION, bucket=BUCKET_NAME, rm=True):
 #     creds = get_credentials()
