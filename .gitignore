@@ -10,7 +10,7 @@ groupama/data/base_pno.*
 .DS_Store
 .idea/
 raw_data/
-**/models
+models/
 GreenEyeResNet50V1/
-**/GreenEyeResNet50V1/variables/variables.data-00000-of-00001
+*.data-00000-of-00001
 
