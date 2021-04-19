@@ -5,7 +5,7 @@ and has initially been developed as a student project at the end of [Le Wagon](h
 
 Credits to Tomás Di Gennaro, Vinicius Moura and Guillaume Vanderwinden who built it from scratch in 8 days (December 2020).
 
-Add image from unsplash with "![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)"
+![](https://github.com/GuiVdwinden/greeneye/readme_banner.png?raw=true)
 
 The demo, hosted on Heroku, can be found here.
 
