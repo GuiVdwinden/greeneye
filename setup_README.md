@@ -42,7 +42,7 @@ Functionnal test with a script:
 ```
 # Install
 Go to `gitlab.com/{group}/greeneye` to see the project, manage issues,
-setup you ssh public key, ...
+setup you ssh public key, etc.
 
 Create a python3 virtualenv and activate it:
 ```bash
