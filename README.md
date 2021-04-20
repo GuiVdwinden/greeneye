@@ -4,8 +4,7 @@ Greeneye is a satellite images classifier aiming to tackle deforestation in the 
 and has initially been developed as a student project at the end of [Le Wagon](https://www.lewagon.com/)'s bootcamp.
 
 Credits to Tomás Di Gennaro, Vinicius Moura and Guillaume Vanderwinden who built it from scratch in 8 days (December 2020).
-
-[banner](/readme_banner.png)
+![Alt text](/greeneye/readme_banner.png?raw=true "Title")
 
 The demo, hosted on Heroku, can be found here.
 
