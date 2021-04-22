@@ -3,7 +3,7 @@
 Greeneye is a satellite images classifier aiming to tackle deforestation in the Amazon basin. 
 
 This app is based on the dataset "[Understanding the Amazon from Space](https://www.kaggle.com/c/planet-understanding-the-amazon-from-space)" from Kaggle
-and has originally been developed as a student project at the end of [Le Wagon](https://www.lewagon.com/)'s bootcamp. Credits to Tomás Di Gennaro, Vinicius Moura and Guillaume Vanderwinden who built it from scratch in 8 days (December 2020). The demo, hosted on Heroku, can be found here.
+and has originally been developed as a student project at the end of [Le Wagon](https://www.lewagon.com/)'s bootcamp. Credits to Tomás Di Gennaro, Vinicius Moura and Guillaume Vanderwinden who built it from scratch in 8 days (December 2020). A live demo can be found [here](https://www.youtube.com/watch?v=t48BhSI8R34&t=712s).
 
 *Caution: this tool is not ready to be scaled yet. Any contributor is welcome to join the adventure and support Greeneye's development for a greener future!*
 
