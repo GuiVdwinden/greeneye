@@ -7,7 +7,7 @@ and has originally been developed as a student project at the end of [Le Wagon](
 
 *Caution: this tool is not ready to be scaled yet. Any contributor is welcome to join the adventure and support Greeneye's development for a greener future!*
 
-![alt text](https://github.com/GuiVdwinden/greeneye/blob/master/readme_banner.png?raw=true)
+![alt text](https://github.com/GuiVdwinden/greeneye/blob/master/archives/readme_banner.png?raw=true)
 
 # Application purposes
 
