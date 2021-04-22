@@ -12,7 +12,7 @@ twine
 google-cloud-storage==1.26.0
 gcsfs
 numpy
-matplotlib.pyplot
+matplotlib
 os
 seaborn
 PIL
