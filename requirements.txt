@@ -13,7 +13,6 @@ google-cloud-storage==1.26.0
 gcsfs
 numpy
 matplotlib
-os
 seaborn
 PIL
 google.colab.files
