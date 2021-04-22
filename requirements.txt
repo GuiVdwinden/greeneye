@@ -16,7 +16,7 @@ matplotlib
 seaborn
 flask==1.1.1
 flask-cors
-tensorflow==1.11.0
-keras==2.2.4
+tensorflow
+keras
 scipy
 
