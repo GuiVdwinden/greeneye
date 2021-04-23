@@ -18,10 +18,10 @@ Applied on the same area for a certain time interval, Greeneye has the potential
 
 The dataset is composed of 40,000 different labelled (17 labels) satellite pictures (jpeg - 256x256) from the Amazon Forest. "The data comes from Planet's Flock 2 satellites in both sun-synchronous and ISS orbits and was collected between January 1, 2016 and February 1, 2017." Detailed infomation can be found [here](https://www.kaggle.com/c/planet-understanding-the-amazon-from-space/data).
 
-# Models
+**Preprocessing**
 
-The first model used by Greeneye is a ResNet50. Further models are being trained, tested and stored in this folder.
+The notebook BasePreprocessor.ipynb is a template that collect (load from Google Drive) and process (balancing, encoding) the data for it to be used in a model.
 
-# Executive summary
+**ResNet50**
 
-*Describe the methodology used (preprocessing to performance metrics)*
+The first model used by Greeneye is a ResNet50. Further models are being trained and tested.
