@@ -20,8 +20,9 @@ The dataset is composed of 40,000 different labelled (17 labels) satellite pictu
 
 **Preprocessing**
 
-The notebook BasePreprocessor.ipynb is a template that collect (load from Google Drive) and process (balancing, encoding) the data for it to be used in a model.
+The notebook *BasePreprocessor.ipynb* is a template that collect (load from Google Drive) and process (balancing, encoding) the data for it to be used in a model.
 
 **ResNet50**
 
-The first model used by Greeneye is a ResNet50. Further models are being trained and tested.
+The first model used by Greeneye is a ResNet50. Have a look at *GreenEyeResNet50v1.ipynb*. 
+Further models are being trained and tested.
