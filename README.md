@@ -24,5 +24,5 @@ The notebook *BasePreprocessor.ipynb* is a template that collect (load from Goog
 
 **ResNet50**
 
-The first model used by Greeneye is a ResNet50. Have a look at *GreenEyeResNet50v1.ipynb*. 
+The first model used by Greeneye is a ResNet50. Have a look at *GreenEyeResNet50V1.ipynb*. 
 Further models are being trained and tested.
